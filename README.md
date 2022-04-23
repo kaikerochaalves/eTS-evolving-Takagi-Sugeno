@@ -4,6 +4,8 @@ The evolving Takagi-Sugeno (eTS) is a forecasting model classified as a rule-bas
 
 The paper [2] has a complete review of the eFSs.
 
+I_{1}
+
 - eTS.py (https://github.com/kaikerochaalves/eTS-evolving-Takagi-Sugeno/blob/b634609bb2af9d70a52026d30cac43e5a868ab30/eTS.py) is the eTS model.
 - MackeyGlass.py (https://github.com/kaikerochaalves/eTS-evolving-Takagi-Sugeno/blob/b634609bb2af9d70a52026d30cac43e5a868ab30/MackeyGlass.py) is the script to prepare the Mackey-Glass time series, perform simulations, compute the results and plot the graphics.
 - Nonlinear.py (https://github.com/kaikerochaalves/eTS-evolving-Takagi-Sugeno/blob/b634609bb2af9d70a52026d30cac43e5a868ab30/Nonlinear.py) is the script to prepare the nonlinear dynamic system identification time series, perform simulations, compute the results and plot the graphics.
