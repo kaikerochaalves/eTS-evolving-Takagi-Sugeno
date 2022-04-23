@@ -103,7 +103,7 @@ plt.show()
 
 # Setting the hyperparameters
 InitialOmega = 1000
-r = 0.1
+r = 0.8
 
 # Initialize the model
 model = eTS(InitialOmega = InitialOmega, r = r)
