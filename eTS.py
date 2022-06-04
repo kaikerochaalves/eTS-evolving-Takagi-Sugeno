@@ -37,7 +37,7 @@ class eTS:
         # Compute z
         z = np.concatenate((x.T, y[0].reshape(-1,1)), axis=1).T
         # Initialize the first rule
-        self.parameters = self.parameters.append(self.Initialize_First_Cluster(x, y[0], z), ignore_index = True)
+        self.Initialize_First_Cluster(x, y[0], z)
         # Update lambda of the first rule
         self.Update_Lambda(x)
         # Update the consequent parameters of the fist rule
@@ -57,16 +57,16 @@ class eTS:
             # Compute the data potential
             self.Update_Data_Potential(z_prev, z, i, k+1)
             # Find the rule with the maximum potential
-            IdxMaxPotential = self.parameters['Potential'].idxmax()
+            IdxMaxPotential = self.parameters['Potential'].astype('float64').idxmax()
             # Compute minimum delta
             Delta = self.Minimum_Distance(z)
             # Verifying the needing to creating a new rule
-            if self.DataPotential > self.parameters.loc[IdxMaxPotential, 'Potential'] and self.DataPotential.item()/self.parameters.loc[IdxMaxPotential, 'Potential'] - Delta/self.hyperparameters.loc[0, 'r'] >= 1.:
+            if self.DataPotential.item() > self.parameters.loc[IdxMaxPotential, 'Potential'] and self.DataPotential.item()/self.parameters.loc[IdxMaxPotential, 'Potential'] - Delta/self.hyperparameters.loc[0, 'r'] >= 1.:
                 # Update an existing rule
                 self.Rule_Update(x, z)
             elif self.DataPotential > self.parameters.loc[IdxMaxPotential, 'Potential']:
                 # Create a new rule
-                self.parameters = self.parameters.append(self.Initialize_Cluster(x, z, k+1, i), ignore_index = True)
+                self.Initialize_Cluster(x, z, k+1, i)
             # Update consequent parameters
             self.RLS(x, y[k], xe)
             # Compute the number of rules at the current iteration
@@ -101,11 +101,10 @@ class eTS:
         return self.OutputTestPhase
         
     def Initialize_First_Cluster(self, x, y, z):
-        NewRow = {'Center_Z': z, 'Center_X': x, 'C': self.hyperparameters.loc[0, 'InitialOmega'] * np.eye(x.shape[0] + 1), 'Theta': np.zeros((x.shape[0] + 1, 1)), 'Potential': self.InitialPotential, 'TimeCreation': 1., 'NumPoints': 1.}
+        self.parameters = pd.DataFrame([[z, x, self.hyperparameters.loc[0, 'InitialOmega'] * np.eye(x.shape[0] + 1), np.zeros((x.shape[0] + 1, 1)), self.InitialPotential, 1., 1.]], columns = ['Center_Z', 'Center_X', 'C', 'Theta', 'Potential', 'TimeCreation', 'NumPoints'])
         Output = y
         self.OutputTrainingPhase = np.append(self.OutputTrainingPhase, Output)
         self.ResidualTrainingPhase = np.append(self.ResidualTrainingPhase,(Output - y)**2)
-        return NewRow
     
     def Initialize_Cluster(self, x, z, k, i):
         Theta = np.zeros((x.shape[0] + 1, 1))
@@ -113,8 +112,8 @@ class eTS:
         self.Update_Lambda(x)
         for row in self.parameters.index:
             Theta = Theta + self.parameters.loc[row, 'Lambda'] * self.parameters.loc[row, 'Theta']
-        NewRow = {'Center_Z': z, 'Center_X': x, 'C': self.hyperparameters.loc[0, 'InitialOmega'] * np.eye(x.shape[0] + 1), 'Theta': Theta, 'Potential': self.InitialPotential, 'TimeCreation': k, 'NumPoints': 1}
-        return NewRow
+        NewRow = pd.DataFrame([[z, x, self.hyperparameters.loc[0, 'InitialOmega'] * np.eye(x.shape[0] + 1), Theta, self.InitialPotential, k, 1]], columns = ['Center_Z', 'Center_X', 'C', 'Theta', 'Potential', 'TimeCreation', 'NumPoints'])
+        self.parameters = pd.concat([self.parameters, NewRow], ignore_index=True)
     
     def Update_Rule_Potential(self, z, i, k):
         self.parameters.at[i, 'Potential'] = ((k - 1) * self.parameters.loc[i, 'Potential']) / (k - 2 + self.parameters.loc[i, 'Potential'] + self.parameters.loc[i, 'Potential'] * self.Distance(z.T, self.parameters.loc[i, 'Center_Z'].T)**2)
