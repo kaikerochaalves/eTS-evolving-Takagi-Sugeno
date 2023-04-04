@@ -150,8 +150,12 @@ class eTS:
         for row in self.parameters.index:
             self.parameters.at[row, 'Tau'] = self.mu(self.parameters.loc[row, 'Center_X'], x)
         Total_Tau = sum(self.parameters['Tau'])
-        for row in self.parameters.index:
-            self.parameters.at[row, 'Lambda'] = self.parameters.loc[row, 'Tau'] / Total_Tau
+        if Total_Tau == 0:
+            for row in self.parameters.index:
+                self.parameters.at[row, 'Lambda'] = 1. / self.parameters.shape[0]
+        else:
+            for row in self.parameters.index:
+                self.parameters.at[row, 'Lambda'] = self.parameters.loc[row, 'Tau'] / Total_Tau
     
     def mu(self, Center_X, x):
         tau = 1
